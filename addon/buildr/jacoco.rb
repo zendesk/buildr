@@ -18,7 +18,8 @@ module Buildr
   # WARNING: Experimental and may change radically.
   module JaCoCo
     class << self
-      VERSION = '0.5.10.201208310627'
+      VERSION = '0.7.2.201409121644'
+      ASM_VERSION = '5.0.1'
 
       def version
         @version || Buildr.settings.build['jacoco'] || VERSION
@@ -26,6 +27,14 @@ module Buildr
 
       def version=(value)
         @version = value
+      end
+
+      def asm_version
+        @asm_version || Buildr.settings.build['asm'] || ASM_VERSION
+      end
+
+      def asm_version=(value)
+        @asm_version = value
       end
 
       def agent_spec
@@ -37,9 +46,9 @@ module Buildr
           "org.jacoco:org.jacoco.report:jar:#{version}",
           "org.jacoco:org.jacoco.core:jar:#{version}",
           "org.jacoco:org.jacoco.ant:jar:#{version}",
-          'asm:asm:jar:3.3.1',
-          'asm:asm-commons:jar:3.3.1',
-          'asm:asm-tree:jar:3.3.1'
+          "org.ow2.asm:asm:jar:#{asm_version}",
+          "org.ow2.asm:asm-commons:jar:#{asm_version}",
+          "org.ow2.asm:asm-tree:jar:#{asm_version}"
         ]
       end
     end
