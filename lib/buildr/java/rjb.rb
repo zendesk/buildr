@@ -118,7 +118,16 @@ module Java
       if Buildr::Util.win_os?
         ENV["PATH"] = "#{ENV['JAVA_HOME']}#{File::SEPARATOR}bin#{File::PATH_SEPARATOR}#{ENV["PATH"]}"
       end
-      ::Rjb.load cp.join(File::PATH_SEPARATOR), java_opts
+
+      # Init with empty classpath, and add jars separately in case
+      # RJB alrady initialized by someone else (in which case load() wouldn't run
+      Rjb::load("", java_opts)
+      cp.each do |path|
+        path = File.expand_path(path)
+        # Need to append a "/" if it's a directory so UrlClassLoader treats it as such
+        path<<"/" if File.directory?(path)
+	Rjb::add_jar(path)
+      end
 
       props = ::Rjb.import('java.lang.System').getProperties
       enum = props.propertyNames
