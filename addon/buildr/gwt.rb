@@ -28,46 +28,58 @@ module Buildr
 
       # The specs for requirements
       def dependencies(version = nil)
-        ["com.google.gwt:gwt-dev:jar:#{version || self.version}"]
+        validation_deps =
+          %w(javax.validation:validation-api:jar:1.0.0.GA javax.validation:validation-api:jar:sources:1.0.0.GA)
+        v = version || self.version
+        gwt_dev_jar = "com.google.gwt:gwt-dev:jar:#{v}"
+        if v <= '2.6.1'
+          [gwt_dev_jar] + validation_deps
+        else
+          [
+            gwt_dev_jar,
+            'org.ow2.asm:asm:jar:5.0.3'
+          ] + validation_deps
+        end
       end
 
       def gwtc_main(modules, source_artifacts, output_dir, unit_cache_dir, options = {})
-        cp = Buildr.artifacts(self.dependencies(options[:version])).each(&:invoke).map(&:to_s) + Buildr.artifacts(source_artifacts).each(&:invoke).map(&:to_s)
-        style = options[:style] || "OBFUSCATED," # "PRETTY", "DETAILED"
+        base_dependencies = self.dependencies(options[:version])
+        cp = Buildr.artifacts(base_dependencies).each(&:invoke).map(&:to_s) + Buildr.artifacts(source_artifacts).each(&:invoke).map(&:to_s)
+        style = options[:style] || 'OBFUSCATED,' # 'PRETTY', 'DETAILED'
         log_level = options[:log_level] #  ERROR, WARN, INFO, TRACE, DEBUG, SPAM, or ALL
         workers = options[:workers] || 2
 
         args = []
         if log_level
-          args << "-logLevel"
+          args << '-logLevel'
           args << log_level
         end
-        args << "-strict"
-        args << "-style"
+        args << '-strict'
+        args << '-style'
         args << style
-        args << "-localWorkers"
+        args << '-localWorkers'
         args << workers
-        args << "-war"
+        args << '-war'
         args << output_dir
         if options[:compile_report_dir]
-          args << "-compileReport"
-          args << "-extra"
+          args << '-compileReport'
+          args << '-extra'
           args << options[:compile_report_dir]
         end
 
         if options[:draft_compile]
-          args << "-draftCompile"
+          args << '-draftCompile'
         end
 
         if options[:enable_closure_compiler].nil? || options[:enable_closure_compiler]
-          args << "-XenableClosureCompiler"
+          args << '-XenableClosureCompiler'
         end
 
         args += modules
 
         properties = options[:properties] ? options[:properties].dup : {}
-        properties["gwt.persistentunitcache"] = "true"
-        properties["gwt.persistentunitcachedir"] = unit_cache_dir
+        properties['gwt.persistentunitcache'] = 'true'
+        properties['gwt.persistentunitcachedir'] = unit_cache_dir
 
         Java::Commands.java 'com.google.gwt.dev.Compiler', *(args + [{:classpath => cp, :properties => properties, :java_args => options[:java_args], :pathing_jar => false}])
       end
@@ -81,10 +93,10 @@ module Buildr
         cp = Buildr.artifacts(self.superdev_dependencies(options[:version])).each(&:invoke).map(&:to_s) + Buildr.artifacts(source_artifacts).each(&:invoke).map(&:to_s)
 
         args = []
-        args << "-port" << (options[:port] || 5050)
-        args << "-workDir" << work_dir
+        args << '-port' << (options[:port] || 5050)
+        args << '-workDir' << work_dir
         (options[:src] || []).each do |src|
-          args << "-src" << src
+          args << '-src' << src
         end
         args << module_name
 
@@ -111,12 +123,28 @@ module Buildr
 
         unit_cache_dir = project._(:target, :gwt, :unit_cache_dir, output_key)
 
+        version = gwt_detect_version(dependencies) || Buildr::GWT.version
+
+        if project.iml?
+
+          existing_deps = project.compile.dependencies.collect do |d|
+            a = artifact(d)
+            a.invoke if a.respond_to?(:invoke)
+            a.to_s
+          end
+          Buildr::GWT.dependencies(version).each do |d|
+            a = artifact(d)
+            a.invoke if a.respond_to?(:invoke)
+            project.iml.main_dependencies << a.to_s unless existing_deps.include?(a.to_s)
+          end
+        end
+
         task = project.file(output_dir) do
           Buildr::GWT.gwtc_main(module_names,
                                 (dependencies + artifacts).flatten.compact,
                                 output_dir,
                                 unit_cache_dir,
-                                {:version => gwt_detect_version(dependencies)}.merge(options))
+                                {:version => version}.merge(options))
         end
         task.enhance(dependencies)
         task.enhance([project.compile])
@@ -137,8 +165,8 @@ module Buildr
           end
         end
 
-        desc "Run Superdev mode"
-        project.task("superdev") do
+        desc 'Run Superdev mode'
+        project.task('superdev') do
           work_dir = project._(:target, :gwt, :superdev)
           mkdir_p work_dir
           Buildr::GWT.gwt_superdev(module_name,

@@ -18,9 +18,10 @@ unless defined?(Buildr::VERSION)
   $LOADED_FEATURES << 'buildr/version.rb'
 end
 
-# Rakefile needs to create spec for both platforms (ruby and java), using the
-# $platform global variable.  In all other cases, we figure it out from RUBY_PLATFORM.
-$platform ||= RUBY_PLATFORM[/java/] || 'ruby'
+# Rakefile needs to create spec for all platforms (ruby and java), using the
+# BUILDR_PLATFORM environment variable. In all other cases, we figure it out
+# from RUBY_PLATFORM.
+$platform = ENV['BUILDR_PLATFORM'] || RUBY_PLATFORM[/java/] || Gem::Platform::CURRENT
 
 Gem::Specification.new do |spec|
   spec.name           = 'buildr'
@@ -29,6 +30,7 @@ Gem::Specification.new do |spec|
   spec.email          = 'users@buildr.apache.org'
   spec.homepage       = 'http://buildr.apache.org/'
   spec.summary        = 'Build like you code'
+  spec.licenses        = ['Apache-2.0']
   spec.description    = <<-TEXT
 Apache Buildr is a build system for Java-based applications, including support
 for Scala, Groovy and a growing number of JVM languages and tools.  We wanted
@@ -63,8 +65,8 @@ for those one-off tasks, with a language that's a joy to use.
   spec.add_dependency 'rubyzip',              '0.9.9'
   spec.add_dependency 'json_pure',            '1.8.0'
   spec.add_dependency 'hoe',                  '3.7.1'
-  spec.add_dependency 'rjb',                  '~> 1.4.9' if ($platform.to_s == 'x86-mswin32' || $platform.to_s == 'ruby')
-  spec.add_dependency 'atoulme-Antwrap',      '~> 0.7.4'
+  spec.add_dependency 'rjb',                  '1.5.1' if ($platform.to_s == 'x86-mswin32' || $platform.to_s == 'ruby')
+  spec.add_dependency 'atoulme-Antwrap',      '0.7.5'
   spec.add_dependency 'diff-lcs',             '1.2.4'
   spec.add_dependency 'rspec-expectations',   '2.14.3'
   spec.add_dependency 'rspec-mocks',          '2.14.3'
@@ -74,7 +76,7 @@ for those one-off tasks, with a language that's a joy to use.
   spec.add_dependency 'minitar',              '0.5.4'
   spec.add_dependency 'jruby-openssl',        '~> 0.8.2' if $platform.to_s == 'java'
   spec.add_dependency 'bundler'
-  spec.add_dependency 'orderedhash'
+  spec.add_dependency 'orderedhash',          '0.0.6'
   spec.add_dependency 'win32console'          '1.3.2' if $platform.to_s == 'x86-mswin32'
 
   # Unable to get this consistently working under jruby on windows
