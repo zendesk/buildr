@@ -25,7 +25,7 @@ $platform = ENV['BUILDR_PLATFORM'] || RUBY_PLATFORM[/java/] || Gem::Platform::CU
 
 Gem::Specification.new do |spec|
   spec.name           = 'buildr'
-  spec.version        = Buildr::VERSION.dup
+  spec.version        =  '1.4.22.dev' #Buildr::VERSION.dup
   spec.author         = 'Apache Buildr'
   spec.email          = 'users@buildr.apache.org'
   spec.homepage       = 'http://buildr.apache.org/'
@@ -53,7 +53,7 @@ for those one-off tasks, with a language that's a joy to use.
                           '--webcvs', 'https://github.com/apache/buildr'
   spec.post_install_message = 'To get started run buildr --help'
 
-  spec.required_rubygems_version = '>= 1.8.6'
+  spec.required_rubygems_version = '>= 2.2.2'
 
   # Tested against these dependencies.
   spec.add_dependency 'rake',                 '0.9.2.2'
