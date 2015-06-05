@@ -112,14 +112,12 @@ module Buildr
       include Extension
 
       def gwt(module_names, options = {})
-        p = options[:target_project]
-        target_project = p.nil? ? project : p.is_a?(String) ? project(p) : p
         output_key = options[:output_key] || project.id
         output_dir = project._(:target, :generated, :gwt, output_key)
-        artifacts = ([project.compile.target] + project.compile.sources + project.resources.sources).flatten.compact.collect do |a|
+        artifacts = ([project.compile.target] + project.compile.sources + project.resources.sources).collect do |a|
           a.is_a?(String) ? file(a) : a
         end
-        dependencies = options[:dependencies] ? artifacts(options[:dependencies]) : (project.compile.dependencies + [project.compile.target]).flatten.compact.collect do |dep|
+        dependencies = options[:dependencies] ? artifacts(options[:dependencies]) : (project.compile.dependencies + [project.compile.target]).collect do |dep|
           dep.is_a?(String) ? file(dep) : dep
         end
 
@@ -128,9 +126,10 @@ module Buildr
         version = gwt_detect_version(dependencies) || Buildr::GWT.version
 
         if project.iml?
+
           existing_deps = project.compile.dependencies.collect do |d|
             a = artifact(d)
-            a.invoke if a.is_a?(Buildr::Artifact)
+            a.invoke if a.respond_to?(:invoke)
             a.to_s
           end
           Buildr::GWT.dependencies(version).each do |d|
@@ -149,7 +148,7 @@ module Buildr
         end
         task.enhance(dependencies)
         task.enhance([project.compile])
-        target_project.assets.paths << task
+        project.assets.paths << task
         task
       end
 

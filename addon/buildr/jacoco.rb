@@ -45,13 +45,7 @@ module Buildr
           "org.jacoco:org.jacoco.report:jar:#{version}",
           "org.jacoco:org.jacoco.core:jar:#{version}",
           "org.jacoco:org.jacoco.ant:jar:#{version}",
-<<<<<<< HEAD
           'org.ow2.asm:asm-debug-all:jar:5.0.1'
-=======
-          "org.ow2.asm:asm:jar:#{asm_version}",
-          "org.ow2.asm:asm-commons:jar:#{asm_version}",
-          "org.ow2.asm:asm-tree:jar:#{asm_version}"
->>>>>>> Upgrade JaCoCo version and make ASM version configurable
         ]
       end
     end
